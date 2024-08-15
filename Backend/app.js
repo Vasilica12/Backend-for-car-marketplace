@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
   next();
 });
 
@@ -38,6 +38,22 @@ app.post('/api/cars', (req, res, next) => {
   });
 })
 
+app.put('/api/cars/:id', (req, res, next) => {
+  const car = new Car({
+    _id: req.body.id,
+    brand: req.body.brand,
+    model: req.body.model,
+    description: req.body.description
+  });
+
+  Car.updateOne({_id: req.params.id}, car).then(result => {
+    console.log(result);
+    res.status(200).json({
+      message: "Car updated succesfully"
+    });
+  })
+});
+
 app.get('/api/cars' , (req, res, next) => {
   Car.find()
     .then((documents) => {
@@ -46,6 +62,17 @@ app.get('/api/cars' , (req, res, next) => {
         cars: documents
       });
     });
+});
+
+app.get('/api/cars/:id', (req, res, next) => {
+  Car.findById(req.params.id)
+    .then(car => {
+      if(car) {
+        res.status(200).json(car);
+      } else {
+        res.status(404).json({ message: 'Car not found!'});
+      }
+    })
 });
 
 app.delete('/api/cars/:id', (req, res, next) => {
