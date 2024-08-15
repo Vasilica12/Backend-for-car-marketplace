@@ -1,30 +1,65 @@
 const express = require("express");
 const Car = require('../models/car');
+const multer = require('multer');
 
 const router = express.Router();
 
-router.post('', (req, res, next) => {
+const MIME_TYPE_MAP = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg'
+} 
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const isValid = MIME_TYPE_MAP[file.mimetype];
+    let error = new Error("Invalid mime type");
+    if(isValid) {
+      error = null;
+    }
+    cb(error, "Backend/images");
+  },
+  filename: (req, file, cb) => {
+    const name = file.originalname.toLocaleLowerCase().split(' ').join('-');
+    const ext = MIME_TYPE_MAP[file.mimetype];
+    cb(null, name + '-' + Date.now() + '.' + ext);
+  }
+});
+
+router.post('', multer({storage: storage}).single("image"), (req, res, next) => {
+  const url = req.protocol + '://' + req.get("host");
   const car = new Car({
-    brand: req.body.brand,
     model: req.body.model,
-    description: req.body.description
+    description: req.body.description,
+    imagePath: url + "/images/" + req.file.filename
   });
   car.save().then(createdCar => {
     res.status(201).json({
       message: "Car added",
-      carId: createdCar._id
+      car: {
+        id: createdCar._id,
+        model: createdCar.model,
+        description: createdCar.description,
+        imagePath: createdCar.imagePath
+      }
     });
   });
 })
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id', multer({storage: storage}).single("image"), (req, res, next) => {
+  let imagePath = req.body.imagePath;
+  if(req.file) {
+    const url = req.protocol + '://' + req.get("host");
+    imagePath = url + "/images/" + req.file.filename;
+  }
   const car = new Car({
     _id: req.body.id,
-    brand: req.body.brand,
     model: req.body.model,
-    description: req.body.description
+    description: req.body.description,
+    imagePath: imagePath
   });
 
+  console.log(car);
   Car.updateOne({_id: req.params.id}, car).then(result => {
     console.log(result);
     res.status(200).json({
