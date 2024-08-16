@@ -69,11 +69,27 @@ router.put('/:id', multer({storage: storage}).single("image"), (req, res, next) 
 });
 
 router.get('' , (req, res, next) => {
-  Car.find()
+  const pageSize = +req.query.pagesize;
+  const currentPage = +req.query.page;
+  const carQuery = Car.find();
+  let fetchedCars;
+
+  if(pageSize && currentPage) {
+    carQuery 
+     .skip(pageSize * (currentPage - 1))
+     .limit(pageSize);
+  }
+
+  carQuery
     .then((documents) => {
+      fetchedCars = documents;
+      return Car.countDocuments();
+    })    
+    .then(count => {
       res.status(200).json({
-        message: "Posts fetched succesfully",
-        cars: documents
+        message: "Cars fetched succesfully",
+        cars: fetchedCars,
+        maxCars: count
       });
     });
 });
