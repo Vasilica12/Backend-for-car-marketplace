@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const carRoutes = require('./routes/cars');
+const authRoutes = require('./routes/auth');
 
 const app = express(); // create an express app
 
@@ -27,5 +28,6 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/cars', carRoutes);
+app.use('/api/user', authRoutes);
 
 module.exports = app; // this will export the entire app
