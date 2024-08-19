@@ -32,7 +32,8 @@ router.post('', checkAuth, multer({storage: storage}).single("image"), (req, res
   const car = new Car({
     model: req.body.model,
     description: req.body.description,
-    imagePath: url + "/images/" + req.file.filename
+    imagePath: url + "/images/" + req.file.filename,
+    creator: req.userData.userId
   });
   car.save().then(createdCar => {
     res.status(201).json({
@@ -57,15 +58,22 @@ router.put('/:id', checkAuth, multer({storage: storage}).single("image"), (req, 
     _id: req.body.id,
     model: req.body.model,
     description: req.body.description,
-    imagePath: imagePath
+    imagePath: imagePath,
+    creator: req.userData.userId
   });
 
   console.log(car);
-  Car.updateOne({_id: req.params.id}, car).then(result => {
+  Car.updateOne({_id: req.params.id, creator: req.userData.userId}, car).then(result => {
     console.log(result);
-    res.status(200).json({
-      message: "Car updated succesfully"
-    });
+    if(result.modifiedCount > 0) {
+      res.status(200).json({
+        message: "Car updated succesfully"
+      });
+    } else {
+      res.status(401).json({
+        message: "Not authorized!"
+      });
+    }
   })
 });
 
@@ -107,12 +115,18 @@ router.get('/:id', (req, res, next) => {
 });
 
 router.delete('/:id', checkAuth, (req, res, next) => {
-  Car.deleteOne({_id: req.params.id})
+  Car.deleteOne({_id: req.params.id, creator: req.userData.userId})
     .then((result) => {
-      console.log(result)
-      res.status(200).json({
-        message: "Post deleted successfully"
-      })
+      console.log(result);
+      if(result.deletedCount > 0) {
+        res.status(200).json({
+          message: "Post deleted successfully"
+        })
+      } else {
+        res.status(401).json({
+          message: "Not authorized!"
+        });
+      }
     })
 })
 
