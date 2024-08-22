@@ -32,6 +32,8 @@ router.post('', checkAuth, multer({storage: storage}).single("image"), (req, res
   const car = new Car({
     model: req.body.model,
     description: req.body.description,
+    price: req.body.price,
+    telephone: req.body.telephone,
     imagePath: url + "/images/" + req.file.filename,
     creator: req.userData.userId
   });
@@ -42,6 +44,8 @@ router.post('', checkAuth, multer({storage: storage}).single("image"), (req, res
         id: createdCar._id,
         model: createdCar.model,
         description: createdCar.description,
+        price: req.body.price,
+        telephone: req.body.telephone,
         imagePath: createdCar.imagePath
       }
     });
@@ -58,6 +62,8 @@ router.put('/:id', checkAuth, multer({storage: storage}).single("image"), (req, 
     _id: req.body.id,
     model: req.body.model,
     description: req.body.description,
+    price: req.body.price,
+    telephone: req.body.telephone,
     imagePath: imagePath,
     creator: req.userData.userId
   });
