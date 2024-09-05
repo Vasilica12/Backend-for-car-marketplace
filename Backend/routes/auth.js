@@ -10,6 +10,8 @@ router.post("/signup", (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then(hash => {
       const user = new User({
+        firstName: req.body.firstName,
+        secondName: req.body.secondName,
         email: req.body.email,
         password: hash
       });
@@ -37,6 +39,7 @@ router.post('/login', (req, res, next) => {
         throw new Error('User not found');
       }
       theUser = user;
+      console.log(user.firstName, user.secondName);
       return bcrypt.compare(req.body.password, user.password);
     })
     .then(result => {
@@ -48,7 +51,7 @@ router.post('/login', (req, res, next) => {
         'the_car_is_expensive',
         { expiresIn: '1h' }
       );
-      res.status(200).json({ token: token, expiresIn: 3600, userId: theUser._id });
+      res.status(200).json({ token: token, expiresIn: 3600, userId: theUser._id, email: theUser.email, firstName: theUser.firstName});
     })
     .catch(err => {
       res.status(401).json({ message: err.message });
